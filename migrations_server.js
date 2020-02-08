@@ -154,7 +154,7 @@ Migrations.getVersion = function() {
 };
 
 // migrates to the specific version passed in
-Migrations._migrateTo = function(version, rerun) {
+Migrations._migrateTo = async function(version, rerun) {
   var self = this;
   var control = this._getControl(); // Side effect: upserts control document.
   var currentVersion = control.version;
@@ -214,7 +214,7 @@ Migrations._migrateTo = function(version, rerun) {
         maybeName(),
     );
 
-    migration[direction](migration);
+    return migration[direction](migration);
   }
 
   // Returns true if lock was acquired.
@@ -237,12 +237,12 @@ Migrations._migrateTo = function(version, rerun) {
 
   if (currentVersion < version) {
     for (var i = startIdx; i < endIdx; i++) {
-      migrate('up', i + 1);
+      await migrate('up', i + 1);
       currentVersion = self._list[i + 1].version;
     }
   } else {
     for (var i = startIdx; i > endIdx; i--) {
-      migrate('down', i);
+      await migrate('down', i);
       currentVersion = self._list[i - 1].version;
     }
   }
